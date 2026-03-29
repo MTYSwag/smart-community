@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <!-- 项目模型版本,Maven 文件格式版本 -->
+    <modelVersion>4.0.0</modelVersion>
+    <!-- 项目组 -->
+    <groupId>com.smart.community</groupId>
+    <!-- 项目名称 -->
+    <artifactId>smart-community</artifactId>
+    <!-- 项目版本 -->
+    <version>1.0.0-SNAPSHOT</version>
+    <!-- 项目名称,显示在 Maven 仓库中 -->
+    <name>smart-community</name>
+    <!-- 项目描述 -->
+    <description>智能UGC社区平台父项目</description>
+    <!-- 项目打包方式 -->
+    <packaging>pom</packaging>
+
+    <!-- 子模块列表 (稍后创建模块后需在此添加) -->
+    <modules>
+        <module>smart-community-common</module>
+        <module>smart-community-user</module>
+        <module>smart-community-gateway</module>
+    </modules>
+
+    <!-- 项目属性,用于定义全局的构建属性,如编码、版本等 -->
+    <properties>
+        <java.version>17</java.version>
+        <!-- 【项目编码格式控制】 -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- 【核心版本控制】 -->
+        <spring-boot.version>3.2.4</spring-boot.version>
+        <!-- 【Spring Cloud版本控制】 -->
+        <spring-cloud.version>2023.0.0</spring-cloud.version>
+        <!-- 【Spring Cloud Alibaba版本控制】 -->
+        <spring-cloud-alibaba.version>2023.0.0.0-RC1</spring-cloud-alibaba.version>
+        <!-- 【Mybatis-Plus版本控制】 -->
+        <mybatis-plus.version>3.5.7</mybatis-plus.version>
+        <!-- 【Hutool版本控制】 -->
+        <hutool.version>5.8.25</hutool.version>
+        <!-- 【Lombok版本控制】 -->
+        <lombok.version>1.18.40</lombok.version>
+        <!-- Redisson 版本 (支持 Spring Boot 3) -->
+        <redisson.version>3.25.0</redisson.version>
+        <!-- JWT 版本 -->
+        <jjwt.version>0.12.3</jjwt.version>
+        <!-- 【Swagger版本控制】 -->
+        <swagger.version>2.2.0</swagger.version>
+        <!-- 【Knife4j版本控制】 -->
+        <knife4j.version>4.5.0</knife4j.version>
+        <!-- minio 版本 -->
+        <minio.version>8.5.1</minio.version>
+    </properties>
+
+    <!-- 项目依赖,用于引入其他项目的代码或库 -->
+    <!-- 统一管理所有依赖的版本号dependencyManagement标签,统一管理版本号，不导包 -->
+    <dependencyManagement>
+        <!--真正导包 -->
+        <dependencies>
+            <!-- Spring Boot Dependencies -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- Spring Cloud Dependencies -->
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- Spring Cloud Alibaba Dependencies -->
+            <dependency>
+                <groupId>com.alibaba.cloud</groupId>
+                <artifactId>spring-cloud-alibaba-dependencies</artifactId>
+                <version>${spring-cloud-alibaba.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- MyBatis Plus (适配 Spring Boot 3) -->
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+                <version>${mybatis-plus.version}</version>
+            </dependency>
+            <!-- Hutool -->
+            <dependency>
+                <groupId>cn.hutool</groupId>
+                <artifactId>hutool-all</artifactId>
+                <version>${hutool.version}</version>
+            </dependency>
+            <!-- Lombok -->
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+            </dependency>
+            <!-- Redisson Starter -->
+            <dependency>
+                <groupId>org.redisson</groupId>
+                <artifactId>redisson-spring-boot-starter</artifactId>
+                <version>${redisson.version}</version>
+            </dependency>
+            <!-- JWT (JJWT) -->
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-api</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-impl</artifactId>
+                <version>${jjwt.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-jackson</artifactId>
+                <version>${jjwt.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+            <!--            swagger-->
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                <version>${swagger.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.xiaoymin</groupId>
+                <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
+                <version>${knife4j.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <!-- 构建插件,用于配置构建过程中的任务,如编译、打包等 -->
+    <build>
+        <!-- 插件配置 -->
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.10.1</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

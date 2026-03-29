@@ -1,0 +1,66 @@
+server:
+  port: 18081
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${sysconfig.mysql-url}/smart_community?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: root123456
+    hikari:
+      connectionTimeout: 30000
+      idleTimeout: 60000
+      maxLifetime: 60000
+      minimumIdle: 5
+      maximumPoolSize: 10
+ #为什么非要加data: 这个配置项，否则会报错，提示 data: 这个配置项是可选的，但是建议还是加上，因为 data: 这个配置项是 Spring Boot 2.5 之后的配置项，建议还是加上
+  data:
+    redis:
+      host: ${sysconfig.redis-url}
+      port: 6379
+      password: 123456
+      database: 0
+      timeout: 3000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1ms
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${sysconfig.nacos-url}
+        username: nacos
+        password: nacos
+      config:
+        server-addr: ${sysconfig.nacos-url}
+        file-extension: yaml
+        namespace: public # 测试环境的命名空间
+
+
+# 测试环境：日志详细一点，方便调试
+logging:
+  level:
+    root: INFO
+    com.smart.user: DEBUG      # 自己的包打印 DEBUG
+    com.alibaba.cloud.nacos: DEBUG # Nacos 交互打印 DEBUG
+
+# Knife4j 增强配置
+
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn # 设置语言为中文
+
+# 应用配置示例
+app:
+  security:
+    password-encoder: bcrypt
+    bcrypt-strength: 12    # 生产环境推荐12-15
+    migration-enabled: true # 支持密码编码方式迁移
+
+sysconfig:
+  mysql-url: 192.168.11.223:3306
+  redis-url: 192.168.11.223
+  nacos-url: 192.168.11.223:8848

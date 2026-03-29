@@ -1,0 +1,32 @@
+# bootstrap.yml 只放：应用名 + Nacos 连接配置（优先级最高）
+spring:
+  application:
+    name: smart-gateway-service  # 服务名，必须和 Nacos 一致
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 192.168.11.223:8848  # Nacos 地址
+        username: nacos
+        password: nacos
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      config:
+        server-addr: 192.168.11.223:8848
+        username: nacos
+        password: nacos
+        file-extension: yml
+        group: DEFAULT_GROUP
+    gateway:
+      routes:
+        - id: smart-user
+          uri: lb://smart-user-service #写服务名
+          predicates:
+            - Path=/user/**
+server:
+  port: 18000  # 网关端口
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    com.alibaba.nacos: INFO
