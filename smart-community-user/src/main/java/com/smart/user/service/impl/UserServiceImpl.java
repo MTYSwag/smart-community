@@ -1,20 +1,29 @@
 package com.smart.user.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.smart.common.VO.PageResultVO;
 import com.smart.common.result.Result;
 import com.smart.common.constants.UserConstants;
 import com.smart.common.exception.BusinessException;
 import com.smart.common.utils.BCryptUtil;
 import com.smart.common.utils.JwtUtil;
+import com.smart.common.utils.LoginUserUtil;
 import com.smart.user.domain.dto.LoginUserDTO;
 import com.smart.user.domain.dto.RegisterUserDTO;
+import com.smart.user.domain.dto.UpdateUserInfoDTO;
+import com.smart.user.domain.dto.UserPageDTO;
+import com.smart.user.domain.vo.UserInfoVo;
 import com.smart.user.entity.SysUser;
 import com.smart.user.mapper.SysUserMapper;
 import com.smart.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -22,8 +31,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -36,6 +48,8 @@ public class UserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impleme
     private RedissonClient redissonClient;
     //因为是在common模块，所以不能用 @Autowired 注入，需要用构造参数注入
 //    private final JwtUtil jwtUtil;
+    @Autowired
+    private SysUserMapper sysUserMapper;
     /**
      *  注册用户-方案一：RedisTemplate 手动锁
      *  是为了测试RedisTemplate 手动锁的使用：作用：防止并发注册时，用户名重复注册
@@ -69,11 +83,11 @@ public class UserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impleme
                     .setUsername(username)
                     // 密码加密
                     .setPassword((BCryptUtil.encrypt(registerUserDTO.getPassword())))
-                    .setNickname(registerUserDTO.getNickname())
                     .setStatus(1)
                     .setFollowCount(0)
                     .setFansCount(0)
                     .setPhone(registerUserDTO.getPhone())
+                    .setEmail(StringUtils.isBlank(registerUserDTO.getEmail()) ? null : registerUserDTO.getEmail())
                     .setCreateTime(LocalDateTime.now())
                     .setDeleted(0);
 
@@ -95,6 +109,7 @@ public class UserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impleme
      * @return
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Result<Void> registerWithRedisson(RegisterUserDTO dto) {
         String username = dto.getUsername();
         String phone = dto.getPhone();
@@ -120,13 +135,12 @@ public class UserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impleme
             SysUser sysUser = new SysUser()
                     .setUsername(username)
                     .setPassword(BCryptUtil.encrypt(dto.getPassword()))// 密码加密
-                    .setNickname(dto.getNickname())
                     .setStatus(1)
                     .setFollowCount(0)
                     .setFansCount(0)
                     .setPhone(dto.getPhone())
                     .setCreateTime(LocalDateTime.now())
-                    .setEmail(dto.getEmail())
+                    .setEmail(StringUtils.isBlank(dto.getEmail()) ? null : dto.getEmail())
                     .setDeleted(0);
             // 保存用户
             this.save(sysUser);
@@ -147,24 +161,34 @@ public class UserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impleme
      * 检查用户唯一性
      */
     private void checkUserUniqueness(String username, String phone,String email) {
-        SysUser existUser = this.lambdaQuery()
-                .eq(SysUser::getUsername, username)
-                .or()
-                .eq(SysUser::getPhone, phone)
-                .or()
-                .eq(SysUser::getEmail, email)
-                .eq(SysUser::getDeleted, 0)
-                .one();
+        // 预处理邮箱：空字符串转为null
+        String processedEmail = StringUtils.isBlank(email) ? null : email;
 
-        if (existUser != null) {
+        // 构建查询条件
+        LambdaQueryWrapper<SysUser> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(SysUser::getDeleted, 0)
+                .and(w -> w
+                        .eq(SysUser::getUsername, username)
+                        .or()
+                        .eq(StringUtils.isNotBlank(phone), SysUser::getPhone, phone)
+                        .or()
+                        .eq(StringUtils.isNotBlank(processedEmail), SysUser::getEmail, processedEmail)
+                );
+
+        SysUser existUser = this.getOne(wrapper);
+
+        if ((!Objects.isNull(existUser))) {
             if (username.equals(existUser.getUsername())) {
                 throw BusinessException.usernameExists(username);
             }
-            if (phone != null && phone.equals(existUser.getPhone())) {
+            if (StringUtils.isNotBlank(phone) && phone.equals(existUser.getPhone())) {
                 throw BusinessException.phoneExists(phone);
             }
-            if (email != null && email.equals(existUser.getEmail())) {
+            if (StringUtils.isNotBlank(email) && email.equals(existUser.getEmail())) {
                 throw BusinessException.emailExists(email);
+            }
+            if (StringUtils.isNotBlank(processedEmail) && processedEmail.equals(existUser.getEmail())) {
+                throw BusinessException.emailExists(processedEmail);
             }
         }
     }
@@ -179,11 +203,11 @@ public class UserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impleme
         SysUser user = isLoginUserExist(dto);
         // 生成 Token
         Map<String,Object> claims = new HashMap<>();
-        claims.put("userId",user.getId());
+        claims.put("userId",user.getUserId());
         claims.put("username",user.getUsername());
         String token = JwtUtil.createToken(claims);
         // 【缓存场景】将 Token 存入 Redis，用于后续校验或单点登录控制
-        String redisKey = "user:token:" + user.getId();
+        String redisKey = "user:token:" + user.getUserId();
         redisTemplate.opsForValue().set(redisKey, token, 2, TimeUnit.HOURS);
 
         return Result.success(token);
@@ -215,13 +239,103 @@ public class UserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impleme
         return user;
     }
 
-    private void checkDevCheck(){
-        System.out.println("this is my first check");
+    /**
+     * 获取当前登录用户信息
+     * @return
+     */
+    @Override
+    public Result<UserInfoVo> getUserInfo() {
+        UserInfoVo userInfoVo = new UserInfoVo();
+        Long userId = LoginUserUtil.getUserId();
+        SysUser user = lambdaQuery().eq(SysUser::getUserId, userId).one();
+        BeanUtils.copyProperties(user, userInfoVo);
+        return Result.success(userInfoVo);
     }
 
-    private void checkDevMinioCheck(){
-        System.out.println("this is my first minio check check");
+    /**
+     * 更新用户基本信息
+     * @param dto
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result<Void> updateUserInfo(UpdateUserInfoDTO dto) {
+        Long userId = LoginUserUtil.getUserId();
+        SysUser user = lambdaQuery().eq(SysUser::getUserId, userId).one();
+        if (Objects.isNull(user)){
+            throw BusinessException.userNotFound();
+        }
+        if (user.getStatus() == 0) {
+            throw BusinessException.userDisabled();
+        }
+        checkUserInfoChanges(user, dto);
+        user.setUpdateTime(LocalDateTime.now());
+        this.updateById(user);
+        return Result.success("更新成功");
     }
 
+    /**
+     * 检查用户基本信息是否有变化,有变化则赋值给 user
+     * @param user
+     * @param dto
+     */
+    private void checkUserInfoChanges(SysUser user, UpdateUserInfoDTO dto) {
+        // 检查每个字段是否有变化
+        if (dto.getUsername() != null && !dto.getUsername().equals(user.getUsername())) {
+            user.setUsername(dto.getUsername());
+        }
+        if (dto.getAvatarUrl() != null && !dto.getAvatarUrl().equals(user.getAvatarUrl())) {
+            user.setAvatarUrl(dto.getAvatarUrl());
+        }
+        if (dto.getPhone() != null && !dto.getPhone().equals(user.getPhone())) {
+            user.setPhone(dto.getPhone());
+        }
+        if (dto.getEmail() != null && !dto.getEmail().equals(user.getEmail())) {
+            user.setEmail(dto.getEmail());
+        }
+    }
+
+    /**
+     * 分页查询用户列表(传统mybatis方式)
+     * @param dto
+     * @return
+     */
+    @Override
+    public PageResultVO<UserInfoVo> getUserPageFromMybatis(UserPageDTO dto) {
+        // 计算分页偏移量
+        long offset = (dto.getPageNum() - 1) * dto.getPageSize();
+
+        List<UserInfoVo> records = sysUserMapper.selectUserPage(dto);
+        Long total = sysUserMapper.selectUserPageCount(dto);
+        return new PageResultVO<>(records, total);
+    }
+
+    @Override
+    public Page<UserInfoVo> getUserPageFromMybatisPlus(UserPageDTO dto) {
+        // 1. 构建分页对象
+        Page<SysUser> page = new Page<>(dto.getPageNum(), dto.getPageSize());
+
+        // 2. 构建条件
+        LambdaQueryWrapper<SysUser> wrapper = new LambdaQueryWrapper<>();
+        if (dto.getUsername() != null && !dto.getUsername().trim().isEmpty()) {
+            wrapper.like(SysUser::getUsername, dto.getUsername());
+        }
+        // 可加排序
+        wrapper.orderByDesc(SysUser::getUsername);
+
+        // 3. MP 自动分页 + 自动count
+        Page<SysUser> userPage  = this.page(page, wrapper);
+
+        // 4. 将SysUser转换为UserInfoVo
+        Page<UserInfoVo> voPage = new Page<>(userPage.getCurrent(), userPage.getSize(), userPage.getTotal());
+        voPage.setRecords(userPage.getRecords().stream()
+                .map(user -> {
+                    UserInfoVo vo = new UserInfoVo();
+                    BeanUtils.copyProperties(user, vo);
+                    return vo;
+                })
+                .collect(Collectors.toList()));
+        return voPage;
+    }
 
 }

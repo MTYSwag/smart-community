@@ -32,7 +32,13 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
     private static final List<String> WHITE_LIST = Arrays.asList(
             "/user/login",
             "/user/register",
-            "/user/test"
+            "/user/test",
+            "/doc.html",
+            "/webjars",
+            "/v2/api-docs",
+            "/v3/api-docs",
+            "/swagger-resources",
+            "/favicon.ico"
     );
 
     @Override

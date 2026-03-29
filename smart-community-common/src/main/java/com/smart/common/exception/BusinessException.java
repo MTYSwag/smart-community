@@ -1,5 +1,6 @@
 package com.smart.common.exception;
 
+import com.smart.common.enums.ResultCodeEnum;
 import lombok.Data;
 
 /**
@@ -19,7 +20,7 @@ public class BusinessException extends RuntimeException {
      */
     public BusinessException(String message) {
         super(message);
-        this.code = 500; // 默认服务器错误
+        this.code = ResultCodeEnum.FAIL.getCode(); // 默认服务器错误
     }
 
     /**
@@ -48,7 +49,7 @@ public class BusinessException extends RuntimeException {
      * @return BusinessException
      */
     public static BusinessException usernameExists(String username) {
-        return new BusinessException(400, "用户名" + username + "已存在");
+        return new BusinessException(ResultCodeEnum.USERNAME_EXIST.getCode(), "用户名" + username + "已存在");
     }
 
     /**
@@ -57,7 +58,7 @@ public class BusinessException extends RuntimeException {
      * @return
      */
     public static BusinessException phoneExists(String phone) {
-        return new BusinessException(400, "手机号" + phone + "已被注册");
+        return new BusinessException(ResultCodeEnum.PHONE_EXIST.getCode(), "手机号" + phone + "已被注册");
     }
 
     /**
@@ -66,7 +67,7 @@ public class BusinessException extends RuntimeException {
      * @return
      */
     public static BusinessException emailExists(String email) {
-        return new BusinessException(400, "邮箱" + email + "已被注册");
+        return new BusinessException(ResultCodeEnum.EMAIL_EXIST.getCode(), "邮箱" + email + "已被注册");
     }
 
     /**
@@ -74,7 +75,7 @@ public class BusinessException extends RuntimeException {
      * @return BusinessException
      */
     public static BusinessException userNotFound() {
-        return new BusinessException(404, "用户不存在");
+        return new BusinessException(ResultCodeEnum.USER_NOT_EXIST.getCode(), "用户不存在");
     }
 
     /**
@@ -82,7 +83,7 @@ public class BusinessException extends RuntimeException {
      * @return BusinessException
      */
     public static BusinessException passwordError() {
-        return new BusinessException(401, "密码错误");
+        return new BusinessException(ResultCodeEnum.PASSWORD_ERROR.getCode(), "密码错误");
     }
 
     /**
@@ -90,11 +91,11 @@ public class BusinessException extends RuntimeException {
      * @return BusinessException
      */
     public static BusinessException systemBusy() {
-        return new BusinessException(503, "系统繁忙，请稍后重试");
+        return new BusinessException(ResultCodeEnum.FAIL.getCode(), "系统繁忙，请稍后重试");
     }
 
 
     public static BusinessException userDisabled() {
-        return new BusinessException(403, "账号已被禁用");
+        return new BusinessException(ResultCodeEnum.FORBIDDEN.getCode(), "账号已被禁用");
     }
 }

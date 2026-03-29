@@ -40,7 +40,7 @@
 
         <!-- 依赖公共模块 -->
         <dependency>
-            <groupId>com.smart.community</groupId>
+            <groupId>com.smart.common</groupId>
             <artifactId>smart-community-common</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>

@@ -1,38 +1,29 @@
-package com.smart.user.entity;
+package com.smart.user.domain.vo;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import lombok.experimental.Accessors;
 
 import java.time.LocalDateTime;
 
 /**
- * sys_user 用户表实体类
+ * 用户信息VO
  */
 @Data
-@TableName("sys_user")
-@Accessors(chain = true)
-public class SysUser {
-
-    @TableId(type = IdType.ASSIGN_ID) // 雪花算法生成ID
+public class UserInfoVo {
     @Schema(description = "用户id")
     private Long userId;
 
     @Schema(description = "用户名")
     private String username;
 
-    @Schema(description = "密码")
-    private String password;
-
     @Schema(description = "头像url")
     private String avatarUrl;
 
     @Schema(description = "手机号")
     private String phone;
-
-    @Schema(description = "状态 1正常 0禁用")
-    private Integer status; // 1正常 0禁用
 
     @Schema(description = "关注数")
     private Integer followCount;
@@ -48,14 +39,7 @@ public class SysUser {
     @Schema(description = "更新时间")
     private LocalDateTime updateTime;
 
-    @TableLogic // 逻辑删除
-    @Schema(description = "逻辑删除 1删除 0正常")
-    private Integer deleted;
-
     @Schema(description = "邮箱")
     private String email;
-
-    @Schema(description = "是否逻辑删除 1删除 0正常")
-    private Integer isDeleted;
 
 }

@@ -47,6 +47,15 @@ public class Result<T> implements Serializable {
         result.setData(data);
         return result;
     }
+    /*
+     * 带数据返回-有数据
+     */
+    public static <T> Result<T> success(T data) {
+        Result<T> result = new Result<>();
+        result.setCode(ResultConstants.SUCCESS);
+        result.setData(data);
+        return result;
+    }
 
     // 失败返回
     public static <T> Result<T> fail(Integer code, String message) {
