@@ -219,4 +219,9 @@ public class UserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impleme
         System.out.println("this is my first check");
     }
 
+    private void checkDevMinioCheck(){
+        System.out.println("this is my first minio check check");
+    }
+
+
 }
