@@ -7,7 +7,7 @@ public class JwtConstants {
     /**
      * 密钥（32位以上），不可泄露改变
      */
-    public static final String JWT_SECRET = "smartcommunity20260328mtyswag";
+    public static final String JWT_SECRET = "smartcommunity20260328mtyswagger2026";
 
     // 过期时间：1小时
     /**

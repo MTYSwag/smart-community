@@ -6,14 +6,12 @@ import com.smart.user.domain.dto.RegisterUserDTO;
 import com.smart.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/user")
 @RequiredArgsConstructor
 @Tag(name = "用户服务", description = "用户服务接口")
 public class UserController {
@@ -38,4 +36,9 @@ public class UserController {
         return userService.login(dto);
     }
 
+    // 测试需要鉴权的接口
+    @GetMapping("/info")
+    public Result<String> getUserInfo(){
+        return Result.success("需要登录才能访问的用户信息");
+    }
 }

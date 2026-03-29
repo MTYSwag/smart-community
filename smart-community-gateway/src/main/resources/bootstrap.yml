@@ -8,8 +8,9 @@ spring:
         server-addr: 192.168.11.223:8848  # Nacos 地址
         username: nacos
         password: nacos
-        locator:
-          enabled: true
+        locator: # 服务发现配置
+          enabled: false  # 关闭服务发现(当 locator.enabled=true 时，
+          # Spring Cloud Gateway会自动为所有注册到Nacos的服务创建默认路由，这会绕过您自定义的路由配置和过滤器！)
           lower-case-service-id: true
       config:
         server-addr: 192.168.11.223:8848
@@ -19,10 +20,10 @@ spring:
         group: DEFAULT_GROUP
     gateway:
       routes:
-        - id: smart-user
-          uri: lb://smart-user-service #写服务名
+        - id: smart-user # 路由id，没有实际意义
+          uri: lb://smart-user-service #写各个微服务模块的名字（spring.application.name）
           predicates:
-            - Path=/user/**
+            - Path=/user/** # 匹配路径
 server:
   port: 18000  # 网关端口
 
