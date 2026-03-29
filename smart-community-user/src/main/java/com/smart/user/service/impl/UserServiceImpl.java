@@ -215,4 +215,8 @@ public class UserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impleme
         return user;
     }
 
+    private void checkDevCheck(){
+        System.out.println("this is my first check");
+    }
+
 }
