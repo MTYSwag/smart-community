@@ -1,0 +1,43 @@
+server:
+  port: 18005 # 文件服务端口，小红书原计划端口
+
+spring:
+  application:
+    name: smart-file-service # 服务名，网关路由用
+  config:
+    import:
+      - optional:nacos:smart-file-dev.yaml
+
+  servlet:
+    multipart:
+      max-file-size: 100MB        # 单个文件最大大小
+      max-request-size: 200MB     # 整个请求最大大小
+      enabled: true               # 启用文件上传支持
+      file-size-threshold: 2KB    # 文件大小阈值，小于此值的数据将保存在内存中
+      location: /tmp              # 临时文件存储位置
+
+# 日志配置
+logging:
+  level:
+    com:
+      baomidou: warn
+    org:
+      springframework: warn
+    io:
+      minio: info
+  pattern:
+    console: '%d{HH:mm:ss} [%thread] %-5level %logger{50} - %msg%n'
+
+# Knife4j 接口文档配置（可选）
+knife4j:
+  enable: true
+  openapi:
+    title: 文件服务接口文档
+    description: 智能社区项目-文件上传/删除/预览
+    version: 1.0.0
+    email: xpcmty@icloud.com
+
+sysConfig:
+  minioUrl: http://192.168.69.223:9000
+  nacosUrl: http://192.168.69.223:8848
+

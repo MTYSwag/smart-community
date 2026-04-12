@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: smart-user-service
+  # 默认激活dev环境，部署时通过命令行覆盖：--spring.profiles.active=prod
+  profiles:
+    active: dev
+
+# 公共日志格式 (所有环境通用)
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{50} - %msg%n"
+
+# Knife4j 公共配置（多环境共享）
+knife4j:
+  enable: true
+  openapi:
+    title: SpringBoot3 用户服务 API 文档
+    description: 智能系统用户服务 API 文档
+    email: xpcmty@icloud.com
+    concat: mty
+    version: 1.0.0
+
+# MyBatis-Plus 全局配置
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # 开发期打印SQL，生产需关闭

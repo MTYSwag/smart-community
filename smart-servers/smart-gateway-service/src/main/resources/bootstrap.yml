@@ -1,0 +1,35 @@
+# bootstrap.yml 只放：应用名 + Nacos 连接配置（优先级最高）
+spring:
+  main:
+    web-application-type: reactive
+  application:
+    name: smart-gateway-service  # 服务名，必须和 Nacos 一致
+  cloud:
+    #nacos配置
+    nacos:
+      # 服务注册与发现配置
+      discovery:
+        server-addr: 192.168.69.223:8848  # Nacos 地址
+        username: nacos
+        password: nacos
+        namespace: dev
+        group: gateway
+        #locator是自动服务发现和路由功能。
+        locator:
+          enabled: true  # 关闭服务发现(当 locator.enabled=true 时，
+          # Spring Cloud Gateway会自动为所有注册到Nacos的服务创建默认路由，这会绕过您自定义的路由配置和过滤器！)
+          #如果 smart-user-service 注册到 Nacos
+          #Gateway 会自动创建路由：http://网关地址/smart-user-service/** → lb://smart-user-service
+          lower-case-service-id: true
+      config: # Nacos 配置
+        server-addr: 192.168.69.223:8848
+        username: nacos
+        password: nacos
+        file-extension: yaml # 配置文件扩展名
+        group: gateway # 配置文件分组
+
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    com.alibaba.nacos: INFO

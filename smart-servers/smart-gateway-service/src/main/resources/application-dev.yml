@@ -1,0 +1,7 @@
+server:
+  port: 18000  # 网关端口
+
+spring:
+  config:
+    import: # 导入Nacos配置,就可以不再在application-dev.yml中配置Nacos的地址、用户名、密码、命名空间、分组、文件扩展名
+      - optional:nacos:smart-gateway-dev.yaml
